@@ -20,11 +20,3 @@ You can try out the application [here](https://blank-app-n07r6aj9j0o.streamlit.a
 - **PIL (Pillow):** A library for image processing in Python.
 - **Hugging Face API:** Used to access the Stable Diffusion model for image generation.
 
-## Installation
-
-### Prerequisites
-
-Make sure you have the following installed on your local machine:
-
-- Python 3.6 or later
-- pip (Python package manager)
