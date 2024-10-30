@@ -28,9 +28,3 @@ Make sure you have the following installed on your local machine:
 
 - Python 3.6 or later
 - pip (Python package manager)
-
-### Clone the Repository
-
-```bash
-git clone https://github.com/yourusername/your-repo-name.git
-cd your-repo-name
