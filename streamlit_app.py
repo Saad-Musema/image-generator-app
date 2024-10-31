@@ -11,7 +11,15 @@ load_dotenv()
 
 
 STABILITY_KEY = os.getenv("STABILITY_API") 
-print(os.getenv("STABILITY_API"))  # Ensure this prints your API key
+print(os.getenv("STABILITY_API")) 
+
+headers = {
+    "Authorization": f"Bearer {os.getenv('STABILITY_API')}",
+    "Content-Type": "application/json"
+}
+
+
+
 
 
 def send_generation_request(
