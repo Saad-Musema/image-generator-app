@@ -5,6 +5,9 @@ import json
 import os
 from PIL import Image
 import requests
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 STABILITY_KEY = os.getenv("STABILITY_API") 
