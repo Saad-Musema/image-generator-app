@@ -27,4 +27,4 @@ jobs:
       env:
         STABILITY_KEY: ${{ secrets.STABILITY_API}}
       run: |
-        streamlit run app.py  # Replace with your app filename
+        streamlit run streamlit_app.py  # Replace with your app filename
