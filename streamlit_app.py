@@ -10,13 +10,14 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-STABILITY_KEY = os.getenv("STABILITY_API") 
-print(os.getenv("STABILITY_API")) 
+STABILITY_KEY = "sk-coIb18g8vfCtM3pEcC0kEUzrH8mORAO20OlmvHAGc9SpqxnL"
 
-headers = {
-    "Authorization": f"Bearer {os.getenv('STABILITY_API')}",
-    "Content-Type": "application/json"
-}
+# print(os.getenv("STABILITY_API")) 
+
+# headers = {
+#     "Authorization": f"Bearer {os.getenv('STABILITY_API')}",
+#     "Content-Type": "application/json"
+# }
 
 
 
