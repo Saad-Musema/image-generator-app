@@ -1,58 +1,105 @@
 import streamlit as st
-import requests
-import io
+from io import BytesIO
+import IPython
+import json
+import os
 from PIL import Image
+import requests
 
-# Set the API URL and headers for Stable Diffusion
-API_URL = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-3.5-large"
-headers = {"Authorization": "Bearer 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"}
 
-def query(image_bytes, prompt):
-    """Function to send a request to the Stable Diffusion image generation API."""
-    # Prepare the payload with the initial image and the text prompt
-    files = {'file': image_bytes}
-    data = {"inputs": prompt}
+STABILITY_KEY = os.getenv("STABILITY_API") 
+print(os.getenv("STABILITY_API"))  # Ensure this prints your API key
 
-    # Send the request to the API
-    response = requests.post(API_URL, headers=headers, files=files, data=data)
-    
-    if response.status_code == 200:
-        return response.content
-    else:
-        st.error(f"Error: {response.status_code} - {response.text}")
-        return None
+
+def send_generation_request(
+    host,
+    params,
+):
+    headers = {
+        "Accept": "image/*",
+        "Authorization": f"Bearer {STABILITY_KEY}"
+    }
+
+    # Encode parameters
+    files = {}
+    image = params.pop("image", None)
+    mask = params.pop("mask", None)
+    if image is not None and image != '':
+        files["image"] = open(image, 'rb')
+    if mask is not None and mask != '':
+        files["mask"] = open(mask, 'rb')
+    if len(files) == 0:
+        files["none"] = ''
+
+    # Send request
+    print(f"Sending REST request to {host}...")
+    response = requests.post(
+        host,
+        headers=headers,
+        files=files,
+        data=params
+    )
+    if not response.ok:
+        raise Exception(f"HTTP {response.status_code}: {response.text}")
+
+    return response
+
 
 # Streamlit app layout
-st.title("Image-to-Image Generation with Stable Diffusion")
+st.title("Image Generation with Stable Diffusion")
+st.markdown("Upload an image and enter a prompt to generate a new image.")
 
-# User input for the prompt
-prompt = st.text_input("Enter a prompt for image generation:", "A futuristic city landscape")
+# Image upload
+uploaded_image = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 
-# Image upload option
-uploaded_file = st.file_uploader("Upload an initial image to condition the generation", type=["jpg", "jpeg", "png"])
+# User input for prompts
+prompt = st.text_input("Prompt")
+negative_prompt = st.text_input("Negative Prompt", "")
+seed = st.number_input("Seed", value=0, min_value=0)
+output_format = st.selectbox("Output Format", ["jpeg", "png"])
+strength = st.slider("Strength", 0.0, 1.0, 0.75, 0.01)
 
+# Generate button
 if st.button("Generate Image"):
-    with st.spinner("Generating image..."):
-        # Prepare the image bytes if an image is uploaded
-        if uploaded_file is not None:
-            # Load the uploaded image
-            uploaded_image = Image.open(uploaded_file)
-            # Convert the uploaded image to bytes for the API call
-            buffer = io.BytesIO()
-            uploaded_image.save(buffer, format="PNG")
-            image_bytes = buffer.getvalue()
+    if uploaded_image is not None:
+        # Save the uploaded image temporarily
+        image_path = "./temp_image.jpg"
+        with open(image_path, "wb") as f:
+            f.write(uploaded_image.getbuffer())
+        
+        host = f"https://api.stability.ai/v2beta/stable-image/generate/sd3"
 
-            # Make the API request for image generation
-            generated_image_bytes = query(io.BytesIO(image_bytes), prompt)
+        params = {
+            "image": image_path,
+            "prompt": prompt,
+            "negative_prompt": negative_prompt,
+            "strength": strength,
+            "seed": seed,
+            "output_format": output_format,
+            "model": "sd3.5-large",
+            "mode": "image-to-image"
+        }
 
-            if generated_image_bytes is not None:
-                try:
-                    # Load the generated image from bytes
-                    generated_image = Image.open(io.BytesIO(generated_image_bytes))
-                    
-                    # Display the generated image
-                    st.image(generated_image, caption=prompt, use_column_width=True)
-                except Exception as e:
-                    st.error(f"Could not open the generated image: {e}")
+        response = send_generation_request(host, params)
+
+        # Decode response
+        output_image = response.content
+        finish_reason = response.headers.get("finish-reason")
+        seed = response.headers.get("seed")
+
+        # Check for NSFW classification
+        if finish_reason == 'CONTENT_FILTERED':
+            st.warning("Generation failed NSFW classifier")
         else:
-            st.error("Please upload an initial image.")
+            # Save and display result
+            generated = f"generated_{seed}.{output_format}"
+            with open(generated, "wb") as f:
+                f.write(output_image)
+            st.success(f"Saved image {generated}")
+
+            # Display generated image
+            st.image(generated, caption="Generated Image")
+
+    else:
+        st.error("Please upload an image before generating.")
+
