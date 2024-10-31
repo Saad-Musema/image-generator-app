@@ -39,4 +39,4 @@ jobs:
       # Step 5: Run the Streamlit app
       - name: Run Streamlit App
         run: |
-          streamlit run app.py
+          streamlit run streamlit_app.py
