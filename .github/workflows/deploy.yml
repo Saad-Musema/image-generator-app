@@ -29,14 +29,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Step 4: Set up .env variables
-      - name: Add .env Variables
-        env:
-          STABILITY_API: ${{ secrets.STABILITY_API }}
-        run: |
-          echo "STABILITY_API=${{ secrets.STABILITY_API }}" >> .env
-
-          - name: Check STABILITY_API
+      - name: Set STABILITY_API environment variable
+        run: echo "STABILITY_API=${{ secrets.STABILITY_API }}" >> $GITHUB_ENV
+        
+      - name: Check STABILITY_API
           if [ -z "$STABILITY_API" ]; then echo "STABILITY_API is not set"; else echo "STABILITY_API is set"; fi
 
 
