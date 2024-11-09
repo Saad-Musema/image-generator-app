@@ -31,10 +31,6 @@ jobs:
 
       - name: Set STABILITY_API environment variable
         run: echo "STABILITY_API=${{ secrets.STABILITY_API }}" >> $GITHUB_ENV
-        
-      - name: Check STABILITY_API
-          if [ -z "$STABILITY_API" ]; then echo "STABILITY_API is not set"; else echo "STABILITY_API is set"; fi
-
 
       # Step 5: Run the Streamlit app
       - name: Run Streamlit App
